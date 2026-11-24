@@ -1,0 +1,18 @@
+- conMainHub:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      Fill: =ColorValue("#F5F6FA")
+      Height: =Parent.Height
+      Width: =Parent.Width
+    Children:
+      - lblHeaderTitle:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Text: ="Operations Intelligence Hub"
+      - btnPriorityLegend:
+          Control: Classic/Button@2.2.0
+          Properties:
+            OnSelect: =Set(varShowLegend, !varShowLegend)
+            Text: ="Priority Legend"

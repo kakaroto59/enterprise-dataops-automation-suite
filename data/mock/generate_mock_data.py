@@ -17,6 +17,7 @@ p1 = importlib.import_module("src.01_in_memory_etl_dashboard.pipeline")
 p2 = importlib.import_module("src.02_rules_engine_auditor.auditor")
 p3 = importlib.import_module("src.03_vectorized_logic_validator.validator")
 p4 = importlib.import_module("src.04_dynamic_formula_injection.synchronizer")
+p5 = importlib.import_module("src.05_operational_data_pipeline")
 
 MOCK_DIR = ROOT_DIR / "data" / "mock"
 OUTPUT_DIR = ROOT_DIR / "data" / "output"
@@ -176,6 +177,106 @@ def create_project_04_mocks() -> None:
     )
 
 
+def create_project_05_mocks() -> None:
+    """Generate synthetic single-table operational dataset, sample YAML UI tree, and HTML Hub."""
+    tracker_df = pd.DataFrame(
+        [
+            {
+                "CASE_NUMBER": "CASE-2026-1001",
+                "THEME": "Spectrum Licensing Review",
+                "SYNTHESIS": "Primary regional spectrum compliance evaluation",
+                "PRIORITY": "1",
+                "DIVISION_UNIT": "DIV_SPECTRUM - Spectrum Engineering",
+                "CLASSIFICATION": "BOARD",
+                "ANALYSIS_STATUS": "In Progress",
+                "INTERNAL_OWNER": "Analyst Alpha",
+                "EXTERNAL_CONTACT": "Director One",
+                "EXTERNAL_ATTENTION_FLAG": True,
+                "CASE_LINK": "https://portal.example.org/cases/1001",
+                "INTERNAL_HISTORY": (
+                    "[[EVENTS]]\n"
+                    "2026-11-22 | SYSTEM: Priority escalated to 1\n"
+                    "2026-11-22 | FLAGGED_ATTENTION: Needs board briefing before Q4 cutoff\n"
+                    "[[INTERACTIONS]]\n"
+                    "2026-11-10 | Ops Lead: Submitted technical dossier\n"
+                    "2026-11-20 | Tech Lead: Final executive brief reviewed"
+                ),
+            },
+            {
+                "CASE_NUMBER": "CASE-2026-1002; CASE-2026-1003",
+                "THEME": "Rural Connectivity Audit",
+                "SYNTHESIS": "Coverage obligation verification across rural districts",
+                "PRIORITY": "2.0",
+                "DIVISION_UNIT": "DIV_COVERAGE",
+                "CLASSIFICATION": "DIVISION",
+                "ANALYSIS_STATUS": "In Progress",
+                "INTERNAL_OWNER": "Analyst Beta",
+                "EXTERNAL_CONTACT": "Director Two",
+                "EXTERNAL_ATTENTION_FLAG": False,
+                "CASE_LINK": "",
+                "INTERNAL_HISTORY": (
+                    "[[EVENTS]]\n"
+                    "2026-11-19 | SYSTEM: Status updated to In Progress\n"
+                    "[[INTERACTIONS]]\n"
+                    "2026-11-01 | Ops Team: Initial field validation pending"
+                ),
+            },
+            {
+                "CASE_NUMBER": "CASE-2026-1004",
+                "THEME": "Legacy Microwave Decommission",
+                "SYNTHESIS": "Decommission close-out report",
+                "PRIORITY": "3",
+                "DIVISION_UNIT": "DIV_INFRA",
+                "CLASSIFICATION": "DIVISION",
+                "ANALYSIS_STATUS": "Closed",
+                "INTERNAL_OWNER": "Analyst Gamma",
+                "EXTERNAL_CONTACT": "Director Three",
+                "EXTERNAL_ATTENTION_FLAG": False,
+                "CASE_LINK": "https://portal.example.org/cases/1004",
+                "INTERNAL_HISTORY": (
+                    "[[EVENTS]]\n"
+                    "2026-11-02 | SYSTEM: Case closed after final sign-off\n"
+                    "[[INTERACTIONS]]\n"
+                    "2026-10-15 | Ops Team: Decommission sign-off archived"
+                ),
+            },
+        ]
+    )
+    tracker_xlsx = MOCK_DIR / "single_table_operations_tracker.xlsx"
+    tracker_df.to_excel(tracker_xlsx, index=False)
+
+    sample_yaml = """- conMainHub:
+    Control: GroupContainer@1.5.0
+    Variant: AutoLayout
+    Properties:
+      Fill: =ColorValue("#F5F6FA")
+      Height: =Parent.Height
+      Width: =Parent.Width
+    Children:
+      - lblHeaderTitle:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Text: ="Operations Intelligence Hub"
+      - btnPriorityLegend:
+          Control: Classic/Button@2.2.0
+          Properties:
+            OnSelect: =Set(varShowLegend, !varShowLegend)
+            Text: ="Priority Legend"
+"""
+    yaml_path = MOCK_DIR / "sample_declarative_ui.yaml"
+    yaml_path.write_text(sample_yaml, encoding="utf-8")
+
+    p5.run_operational_pipeline(
+        input_path=tracker_xlsx,
+        output_html_path=OUTPUT_DIR / "operations_intelligence_hub.html",
+        output_json_path=OUTPUT_DIR / "single_table_cases.json",
+        reference_date="2026-11-23",
+    )
+    lint_res = p5.lint_powerapps_yaml_files([yaml_path])
+    assert lint_res["passed"], f"Sample YAML lint failed: {lint_res['errors']}"
+
+
 def main() -> None:
     MOCK_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -183,7 +284,8 @@ def main() -> None:
     create_project_02_mocks()
     create_project_03_mocks()
     create_project_04_mocks()
-    print("Generated all synthetic mock inputs and executed all 4 pipelines successfully.")
+    create_project_05_mocks()
+    print("Generated all synthetic mock inputs and executed all 5 pipelines successfully.")
 
 
 if __name__ == "__main__":

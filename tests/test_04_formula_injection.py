@@ -89,14 +89,26 @@ def test_lgpd_nda_sanitization_and_no_row_loops() -> None:
         "bmV4dGVs",
         "YW5hdGVs",
         "dml2bw==",
+        "dGVsZWZvbmljYQ==",
+        "Ym9sb21ldHJv",
+        "cmVsZ292",
+        "Y29uZXhpcw==",
+        "ZmVsaXBlLmJhcnJldG8=",
+        "am9hby5mb2xpdmVpcmE=",
     ]
     forbidden = [base64.b64decode(t).decode("utf-8") for t in encoded_terms]
 
-    scan_roots = [ROOT_DIR / "src", ROOT_DIR / "docs", ROOT_DIR / "data" / "mock", ROOT_DIR / ".env.example"]
+    scan_roots = [
+        ROOT_DIR / "README.md",
+        ROOT_DIR / "src",
+        ROOT_DIR / "docs",
+        ROOT_DIR / "data" / "mock",
+        ROOT_DIR / ".env.example",
+    ]
     for root in scan_roots:
         files = [root] if root.is_file() else list(root.rglob("*"))
         for file_path in files:
-            if file_path.is_file() and file_path.suffix in {".py", ".md", ".csv", ".txt", ".example"}:
+            if file_path.is_file() and file_path.suffix in {".py", ".md", ".csv", ".txt", ".example", ".yaml"}:
                 content = file_path.read_text(encoding="utf-8", errors="ignore").lower()
                 for term in forbidden:
                     assert term not in content, f"Confidential term leaked in {file_path}"

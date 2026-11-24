@@ -1,6 +1,6 @@
-# Architecture & System Design Trade-Offs: Telecom DataOps Suite
+# Architecture & System Design Trade-Offs: Enterprise DataOps Suite
 
-This document outlines the engineering decisions, algorithmic complexity improvements, and architectural trade-offs across the four enterprise Data Operations and Automation pipelines refactored from legacy spreadsheet workflows into vectorized Python systems.
+This document outlines the engineering decisions, algorithmic complexity improvements, and architectural trade-offs across the five enterprise Data Operations and Automation pipelines refactored from legacy spreadsheets and low-code relational models into vectorized Python systems.
 
 ## System Overview
 
@@ -10,13 +10,15 @@ flowchart LR
         TXT["Daily TXT/CSV Logs<br/>(New & Reuse Flows)"]
         SCHED["Master Rollout Schedule<br/>(.xlsx / .xlsm)"]
         AUDIT["Regulatory Compliance Sheet<br/>(Multi-Sector Stations)"]
+        OPS["Single-Table Tracker<br/>+ Declarative YAML UI"]
     end
 
     subgraph CoreEngines["Vectorized Python Processing Layer"]
         P1["01. In-Memory ETL & Dashboard<br/>(Pandas Concat + Merge + OpenPyXL)"]
         P2["02. Rules Engine & Auditor<br/>(GroupBy Transform + NumPy Select)"]
-        P3["03. Vectorized Logic Validator<br/>(Explode-Broadcast-Reduce Matrix)"]
+        P3["03. Vectorized Logic Validator<br/>(Explode-Merge-Reduce Matrix)"]
         P4["04. Dynamic Formula Injection<br/>(Hash-Join + Formula Synthesis)"]
+        P5["05. Single-Table ETL & YAML Linter<br/>(Dual-Stream Logs + HTML Hub + AST)"]
     end
 
     subgraph Deliverables["Automated Outputs"]
@@ -24,6 +26,7 @@ flowchart LR
         OUT2["Promotion / Regression Report"]
         OUT3["In-Place Validation Column"]
         OUT4["Synced Workbook + Control Formulas"]
+        OUT5["Interactive HTML Hub + Validated YAML"]
     end
 
     TXT --> P1
@@ -31,11 +34,13 @@ flowchart LR
     AUDIT --> P2
     SCHED --> P3
     SCHED --> P4
+    OPS --> P5
 
     P1 --> OUT1
     P2 --> OUT2
     P3 --> OUT3
     P4 --> OUT4
+    P5 --> OUT5
 ```
 
 ---
@@ -48,7 +53,7 @@ flowchart LR
 - **When to Revisit:** If daily raw logs exceed available workstation RAM (> 2–4 GB) or require concurrent multi-user ACID writes, migrate the staging layer to DuckDB or PostgreSQL while preserving the vectorized transformation contract.
 
 ### 2. Algebraic Vectorization vs. Legacy VBA / Row Iteration (`iterrows`)
-- **Choice:** Replaced Excel row-by-row VBA loops and Python `df.iterrows()` / `df.apply(..., axis=1)` with NumPy boolean masking (`np.where`, `np.select`), `groupby().transform('all')`, and `Series.str.split().explode()` + `.groupby(level=0).all()`.
+- **Choice:** Replaced Excel row-by-row VBA loops and Python `df.iterrows()` / `df.apply(...)` with NumPy boolean masking (`np.where`, `np.select`), `groupby().transform('all')`, and `Series.str.split().explode()` + `.groupby(level=0).all()`.
 - **Why:** Row-by-row COM/Excel object access incurs massive IPC overhead ($O(N)$ cross-process calls) and frequently freezes desktop spreadsheets. Reading ranges in bulk into NumPy/Pandas and writing back vectorized arrays reduces complexity from $O(N \times \text{COM\_latency})$ to vectorized C-level array passes ($O(N)$).
 
 ### 3. Hash-Set Filtering vs. In-Place `Row.Delete`
@@ -62,3 +67,8 @@ flowchart LR
 ### 5. Dual-Mode Execution (CLI / Headless + Optional `xlwings` Bridge)
 - **Choice:** Pure Python/Pandas core functions decoupled from Excel COM hooks, with thin `xlwings` wrappers gated behind lazy imports.
 - **Why:** Guarantees 100% deterministic unit testing (`pytest`) on Linux/Windows CI runners without requiring a live Microsoft Excel installation, while still supporting one-click macro triggers on Windows desktops.
+
+### 6. Denormalized Single-Table + Dual-Stream Embedded Logs vs. 3-List Relational Model (Module 05 Pivot)
+- **Choice:** Pivoted a three-list relational tracker (`Cases`, `Events`, `Quality_Anomalies`) into a **single denormalized table** storing both system audit events (`[[EVENTS]]`) and executive interaction history (`[[INTERACTIONS]]`) inside a structured log column parsed vectorially in Python.
+- **Why:** Live telemetry confirmed an $N+1$ query bottleneck across list lookups alongside non-delegable connector caps on `StartsWith`, `Distinct`, and `CountRows`. Denormalizing to a single table eliminated cross-list $N+1$ roundtrips while regex-tagged streams keep automated priority/status updates strictly isolated from executive `LATEST_INTERACTION` summaries.
+- **Low-Code Engineering Safeguard:** Pairing declarative YAML generation with a Python static AST linter (`yaml_linter.py`) catches unbalanced formulas, schema mismatches, duplicate control IDs, and rigid flexbox `LayoutMinHeight` clipping prior to studio deployment.
