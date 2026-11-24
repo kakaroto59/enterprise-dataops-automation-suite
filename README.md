@@ -73,12 +73,27 @@ flowchart LR
 | **03** | **Vectorized Logic Validator** | Refactors freezing legacy macros and row loops into a 100% vectorized **Explode-Merge-Reduce** matrix validator handling multi-tier frequency aliases, dual-carrier bandwidth rules, and mandatory extension flags in $O(N)$ time. | Python, Pandas, NumPy, OpenPyXL, xlwings | [Sub-README](./src/03_vectorized_logic_validator/README.md) |
 | **04** | **Dynamic Formula Injection & Synchronization** | Replaces slow Excel `Row.Delete` operations with $O(N)$ in-memory hash-set joins (`Series.isin`) and dynamically synthesizes row-dimensioned `=COUNTIF` and `=XLOOKUP` control formulas across synchronized sheets. | Python, Pandas, OpenPyXL, xlwings | [Sub-README](./src/04_dynamic_formula_injection/README.md) |
 | **05** | **Operational Data Pipeline & Declarative UI Linter** | Single-table denormalization solving $N+1$ relational bottlenecks; separates `[[EVENTS]]` audit trails from `[[INTERACTIONS]]` business history, generates a standalone interactive HTML Hub, and statically lints declarative Canvas YAML formulas/layouts. | Python, Pandas, NumPy, PyYAML, HTML/JS | [Sub-README](./src/05_operational_data_pipeline/README.md) |
+| **06** | **[Native MCP GUI Actuator Daemon](https://github.com/kakaroto59/computer-use-mcp-orchestrator)** | Hybrid **Rust (`PyO3`/`abi3`) + Python (`asyncio`)** desktop automation daemon implementing the Model Context Protocol (`stdio`). Features GIL-free Win32 GDI capture (`-85.1%` latency), Per-Monitor DPI v2 $1:1$ fidelity, RAII `InputBlockGuard`, vectorized `[0.0, 1.0]` coordinate mapping, and a `1024px` grayscale `LANCZOS` visual pipeline (`-74.8%` token payload). | Rust, PyO3, Win32 GDI, Python, MCP 2.x, NumPy | [External Repo ↗](https://github.com/kakaroto59/computer-use-mcp-orchestrator) |
 
 ### Architecture & System Design Deep-Dive
 - **[Architecture & System Design Trade-Offs](./docs/architecture_tradeoffs_telecom_dataops.md)** — Detailed analysis of *In-Memory Pandas vs. Relational DB*, *Vectorized Array Compute vs. COM/VBA*, *Hash-Set Joins vs. In-Place Row Deletion*, *Live Formula Synthesis vs. Static Values*, and *3-List Relational Normalization vs. Single-Table Dual-Stream Logs*.
 
-### Related AI Infrastructure & Systems Engineering Project
-- **[`computer-use-mcp-orchestrator`](https://github.com/kakaroto59/computer-use-mcp-orchestrator)** — Hybrid **Rust + Python** native Model Context Protocol (MCP) actuator daemon connecting LLMs directly to desktop OS GUI automation workflows.
+### Companion AI Infrastructure Showcase — `06` [`computer-use-mcp-orchestrator`](https://github.com/kakaroto59/computer-use-mcp-orchestrator)
+
+- **Problem Statement:** Pure-Python desktop automation agents suffer from GIL contention during screen capture, DPI coordinate drift under 125%/150% display scaling, background focus hijacking, and heavy 24-bit RGB screenshots that inflate LLM token budgets.
+- **Architecture & Engineering Highlights:**
+  - **GIL-Free Native Core (`actuator_core` in Rust + `PyO3`):** Captures screens in RAM via Win32 GDI (`BitBlt` + `GetDIBits`) inside `py.allow_threads`, elevates OS priority (`HIGH_PRIORITY_CLASS`), escapes sandbox desktops (`OpenInputDesktop` + `SetThreadDesktop`), locks physical input via RAII `InputBlockGuard`, and manages window Z-Order (`manage_window`).
+  - **LLM-Optimized MCP Daemon (`mcp_daemon` in Python `asyncio`):** Exposes **8 stdio MCP tools** (`capture_screen`, `execute_click`, `execute_type`, `execute_press_key`, `execute_hotkey`, `execute_scroll`, `execute_move`, `manage_window`) using resolution-invariant normalized coordinates `[0.0, 1.0]` mapped vectorially via NumPy and a `1024px` 8-bit grayscale `LANCZOS` JPEG compression pipeline.
+- **Measured Benchmarks (`1920x1080` Per-Monitor DPI v2):**
+
+| Metric | Baseline (`dev` RGB) | Optimized (`--release` + 1024px Grayscale) | Gain |
+| :--- | :---: | :---: | :---: |
+| **Native Rust Capture + Encode** | `940.73 ms` | **`140.36 ms`** | **-85.1% ($6.7\times$ faster)** |
+| **End-to-End Capture + LLM Pipeline** | `940.73 ms` | **`253.46 ms`** | **-73.1% ($3.7\times$ faster)** |
+| **Base64 Visual Payload** | `197.88 KB` | **`49.93 KB`** | **-74.8% tokens/traffic** |
+| **MCP Tools JSON Schema** | `5,419 bytes` | **`3,400 bytes`** | **-37.3% fixed overhead** |
+
+- **Deep-Dive Docs:** [Repository Overview](https://github.com/kakaroto59/computer-use-mcp-orchestrator) · [Architecture & Win32 RCA](https://github.com/kakaroto59/computer-use-mcp-orchestrator/blob/master/docs/architecture_and_rca.md) · [Performance Benchmarks](https://github.com/kakaroto59/computer-use-mcp-orchestrator/blob/master/docs/performance_benchmarks.md) · [DPI Resilience & Z-Order](https://github.com/kakaroto59/computer-use-mcp-orchestrator/blob/master/docs/dpi_resilience_and_z_order.md)
 
 ---
 
