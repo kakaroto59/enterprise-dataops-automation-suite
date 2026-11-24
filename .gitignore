@@ -1,0 +1,33 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Rust (for future multi-project workspace compatibility)
+target/
+**/*.rs.bk
+
+# Excel temporary lock files & generated runtime outputs
+~$*.xlsx
+~$*.xlsm
+~$*.xlsb
+data/output/
+*.tmp
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

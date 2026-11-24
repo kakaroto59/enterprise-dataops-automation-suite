@@ -1,0 +1,7 @@
+STATION;ACTIVITY;STAGE_NAME;DAYS_IN_STAGE
+SITE-1001;ACT-101;21 - Logical Acceptance;3.5
+SITE-1001;ACT-101;22 - Traffic Release;2.0
+SITE-1001;ACT-101;23 - Final Site Acceptance;8.0
+SITE-1002;ACT-102;21 - Logical Acceptance;4.5
+;SITE-1003;22 - Traffic Release;1.5
+SITE-9999;ACT-999;21 - Logical Acceptance;10.0
